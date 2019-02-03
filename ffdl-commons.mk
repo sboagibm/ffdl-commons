@@ -123,7 +123,7 @@ build-grpc-health-checker:
 
 build-x86-64:                                ## Install dependencies if needed, compile go code
 	@if [ ! -d "vendor" ]; then \
-		@if [ -f "glide.yaml" ]; then \
+		if [ -f "glide.yaml" ]; then \
 			make install-deps; \
 		fi; \
 	fi; \
