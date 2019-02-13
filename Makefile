@@ -21,3 +21,6 @@ include ffdl-commons.mk
 install-deps: install-deps-base            ## Remove vendor directory, rebuild dependencies
 
 clean: clean-base                          ## clean all build artifacts
+	rm -f certs/ca.*
+	rm -f certs/client.*
+	rm -f certs/server.*
