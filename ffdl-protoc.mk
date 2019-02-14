@@ -80,6 +80,7 @@ protoc-lcm:  ensure-protoc-installed  ## Make the lcm protoc client, depends on 
 	sed -i.bak '/.*bson:.*/! s/json:"\([^"]*\)"/json:"\1" bson:"\1"/' ./$(LCM_SUBDIR)/$(LCM_FNAME).pb.go
 
 protoc-tds:  ensure-protoc-installed  ## Make the training-data service protoc client, depends on `make glide` being run first
+	mkdir -p $(TDS_LOCATION)/client && cp ../$(REPO_TDS)/client/client.go $(TDS_LOCATION)/client
 	mkdir -p $(TDS_LOCATION)/$(TDS_SUBDIR) && cp ../$(REPO_TDS)/$(TDS_SUBDIR)/$(TDS_FNAME).proto $(TDS_LOCATION)/$(TDS_SUBDIR)
 	cd ./$(TDS_LOCATION); \
 	protoc -I./$(TDS_SUBDIR) --go_out=plugins=grpc:$(TDS_SUBDIR) ./$(TDS_SUBDIR)/$(TDS_FNAME).proto
@@ -87,5 +88,6 @@ protoc-tds:  ensure-protoc-installed  ## Make the training-data service protoc c
 	@# See: https://github.com/golang/protobuf/issues/52
 	cd $(TDS_LOCATION); \
 	sed -i.bak '/.*bson:.*/! s/json:"\([^"]*\)"/json:"\1" bson:"\1"/' ./$(TDS_SUBDIR)/$(TDS_FNAME).pb.go
+
 
 .PHONY: protoc-trainer protoc-lcm protoc-tds show-protoc-dirs
