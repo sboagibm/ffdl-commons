@@ -95,11 +95,11 @@ vet:                                         ## go vet
 lint:                                        ## Run the code linter
 	go list ./... | grep -v /vendor/ | grep -v /grpc_trainer_v2 | xargs -L1 golint -set_exit_status
 
-glide-update:                                ## Run full glide rebuild
-	glide up; \
+glide-update-base:                                ## Run full glide rebuild
+	glide up;
 
 glide-cache-clear:                           ## Run clear the glide cache
-	glide cache-clear; \
+	glide cache-clear;
 
 glide-clean:                                 ## Run full glide rebuild
 	rm -rf vendor;
