@@ -101,7 +101,7 @@ glide-update-base:                                ## Run full glide rebuild
 glide-cache-clear:                           ## Run clear the glide cache
 	glide cache-clear;
 
-glide-clean: glide-cache-clear               ## Run full glide rebuild
+glide-clean:                                 ## Run full glide rebuild
 	rm -rf vendor;
 
 install-deps-local-commons:						 ## Install local ffdl-commons into vendor dir
