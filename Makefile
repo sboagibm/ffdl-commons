@@ -31,12 +31,9 @@ clean: clean-base clean-grpc-health-checker 	## clean all build artifacts
 build-grpc-health-checker:
 	(cd grpc-health-checker && make build-local)
 
-docker-build: install-deps-if-needed docker-build-only        ## Install dependencies if vendor folder is missing, build go code, build docker images (includes controller).
+docker-build: install-deps-if-needed build-grpc-health-checker docker-build-only        ## Install dependencies if vendor folder is missing, build go code, build docker images (includes controller).
 
 docker-push:
 	(DLAAS_IMAGE_TAG="ubuntu16.04" make docker-push-base)           ## Push docker image to a docker hub
-
-clean:
-	rm -rf build
 
 .PHONY: build push clean
