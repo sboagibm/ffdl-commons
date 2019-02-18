@@ -117,10 +117,6 @@ install-deps-if-needed:
 		make install-deps; \
 	fi \
 
-build-grpc-health-checker:
-	@cd vendor/github.com/AISphere/ffdl-commons/grpc-health-checker; \
-	make build-x86-64
-
 build-x86-64:                                ## Install dependencies if needed, compile go code
 	@if [ ! -d "vendor" ]; then \
 		if [ -f "glide.yaml" ]; then \
@@ -134,7 +130,7 @@ docker-build-only:
 
 docker-build-base-only: install-deps-if-needed build-x86-64 docker-build-only
 
-docker-build-base: install-deps-if-needed build-grpc-health-checker build-x86-64 docker-build-only
+docker-build-base: install-deps-if-needed build-x86-64 docker-build-only
 
 build: docker-build docker-push               ## -> Build and push images for current repo
 

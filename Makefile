@@ -14,13 +14,29 @@
 # limitations under the License.
 #
 
-DOCKER_IMG_NAME="no_image!"
+DOCKER_IMG_NAME = "ffdl-service-base"
 
 include ffdl-commons.mk
 
 install-deps: install-deps-base            ## Remove vendor directory, rebuild dependencies
 
-clean: clean-base                          ## clean all build artifacts
+clean-grpc-health-checker:
+	(cd grpc-health-checker && make clean)
+
+clean: clean-base clean-grpc-health-checker 	## clean all build artifacts
 	rm -f certs/ca.*
 	rm -f certs/client.*
 	rm -f certs/server.*
+
+build-grpc-health-checker:
+	(cd grpc-health-checker && make build-local)
+
+docker-build: install-deps-if-needed docker-build-only        ## Install dependencies if vendor folder is missing, build go code, build docker images (includes controller).
+
+docker-push:
+	(DLAAS_IMAGE_TAG="ubuntu16.04" make docker-push-base)           ## Push docker image to a docker hub
+
+clean:
+	rm -rf build
+
+.PHONY: build push clean
