@@ -179,7 +179,7 @@ const (
 	// Secret name for LCM secrets
 	SSLSecretName = "ssl.secret"
 
-	// TLSKey is the config key for looking up whether TLS is enabled.
+	// FfDLExtendedEnabled tells if we should be using FfDL extended learner mechanism
 	FfDLExtendedEnabled = "ffdl.extended"
 )
 
