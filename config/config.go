@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package config
 
 import (
@@ -179,6 +178,9 @@ const (
 
 	// Secret name for LCM secrets
 	SSLSecretName = "ssl.secret"
+
+	// TLSKey is the config key for looking up whether TLS is enabled.
+	FfDLExtendedEnabled = "ffdl.extended"
 )
 
 var viperInitOnce sync.Once
@@ -226,6 +228,8 @@ func InitViper() {
 		// TLS defaults for microservices
 		viper.SetDefault(TLSKey, true)
 		viper.SetDefault(ServerNameKey, "dlaas.ibm.com")
+
+		viper.SetDefault(FfDLExtendedEnabled, false)
 
 		// find certificates locally or in known place (in docker image)
 		baseDir := getBaseDir()
@@ -312,6 +316,10 @@ func GetFileContents(filename string) string {
 // it is false.
 func IsTLSEnabled() bool {
 	return viper.GetBool(TLSKey)
+}
+
+func IsFfDLExtendedEnabled() bool {
+	return viper.GetBool(FfDLExtendedEnabled)
 }
 
 // GetServerCert gets the server's TLS certificate file name.
