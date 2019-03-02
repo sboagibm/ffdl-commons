@@ -25,14 +25,62 @@ FFDL_DEPLOY_VALUES_FILENAME ?= dev_values.yaml
 FFDL_DEPLOY_VALUES ?= ${ENV_DIR}/${FFDL_DEPLOY_VALUES_FILENAME}
 HELM_FLAGS ?=
 HELM_DEPLOY_DIR := ${ROOT_DEPLOY_DIR}/helmdeploy
+FFDL_DEPLOY_RELEASE ?= "dev_deploy"
 
 show-helm-vars:       ## Show main helm vars
 	@echo HELM_DEPLOY_DIR: ${HELM_DEPLOY_DIR}; \
+	echo ROOT_DEPLOY_DIR: ${ROOT_DEPLOY_DIR}; \
+	echo HELM_FLAGS: ${HELM_FLAGS}; \
 	echo TILLER_NAMESPACE: ${TILLER_NAMESPACE}; \
 	echo DOCKER_REPO: ${DOCKER_REPO}; \
-	echo DOCKER_PULL_POLICY: ${DOCKER_PULL_POLICY}
+	echo DOCKER_PULL_POLICY: ${DOCKER_PULL_POLICY}; \
+	echo FFDL_DEPLOY_VALUES: ${FFDL_DEPLOY_VALUES};
 
-deploy: show-helm-vars       ## -> Deploy the services to Kubernetes
+render-helm-templates:
+	cd ${ROOT_DEPLOY_DIR}; \
+	rm -rf ${HELM_DEPLOY_DIR}_rendered; \
+	mkdir ${HELM_DEPLOY_DIR}_rendered; \
+	@echo HELM_DEPLOY_DIR: ${HELM_DEPLOY_DIR}; \
+	helm repo update; \
+	helm dependency update; \
+	mkdir -p ${HELM_DEPLOY_DIR}; \
+	cp -rf Chart.yaml values.yaml charts templates ${HELM_DEPLOY_DIR}; \
+	helm template ${HELM_FLAGS} --name ffdl-${FFDL_DEPLOY_RELEASE} \
+	--namespace ${DLAAS_SERVICES_KUBE_NAMESPACE} -f $(FFDL_DEPLOY_VALUES) \
+    --output-dir ${HELM_DEPLOY_DIR}_rendered \
+    ${HELM_DEPLOY_DIR}
+
+deploy-without-tiller: show-helm-vars render-helm-templates       ## -> Deploy the services to Kubernetes, no tiller
+	@# deploy the stack via helm
+	@echo Deploying services to Kubernetes. This may take a while.
+	@cd ${ROOT_DEPLOY_DIR}; \
+		kubectl apply --recursive --filename ${HELM_DEPLOY_DIR}_rendered
+	@echo done with big command
+	@echo Initializing...
+	@# wait for pods to be ready
+	@while kubectl get pods | \
+		grep -v RESTARTS | \
+		grep -v Running | \
+		grep 'alertmanager\|etcd0\|lcm\|restapi\|trainer\|trainingdata\|ui\|mongo\|prometheus\|pushgateway\|storage' > /dev/null; \
+	do \
+		sleep 5; \
+	done
+	# @echo initialize monitoring dashboards
+	# @if [ "$$CI" != "true" ]; then bin/grafana.init.sh; fi
+	@echo
+	@echo System status:
+	@make status
+
+undeploy-without-tiller:                    ## Undeploy the services from Kubernetes
+	@# undeploy the stack
+	@cd ${ROOT_DEPLOY_DIR}; \
+		kubectl delete --recursive --filename ${HELM_DEPLOY_DIR}_rendered
+
+deploy: deploy-without-tiller
+
+undeploy: undeploy-without-tiller
+
+deploy-with-tiller: show-helm-vars       ## -> Deploy the services to Kubernetes, assuming tiller
 	@# deploy the stack via helm
 	@echo Deploying services to Kubernetes. This may take a while.
 	@if ! helm list --tiller-namespace ${TILLER_NAMESPACE} > /dev/null 2>&1; then \
@@ -110,7 +158,7 @@ deploy: show-helm-vars       ## -> Deploy the services to Kubernetes
 	@echo System status:
 	@make status
 
-undeploy:                    ## Undeploy the services from Kubernetes
+undeploy-with-tiller:                    ## Undeploy the services from Kubernetes
 	@# undeploy the stack
 	@existing=$$(helm list --tiller-namespace ${TILLER_NAMESPACE} | grep ffdl | awk '{print $$1}' | head -n 1); \
 		(if [ ! -z "$$existing" ]; then echo "Undeploying the stack via helm. This may take a while."; helm delete --tiller-namespace ${TILLER_NAMESPACE} "$$existing"; echo "The stack has been undeployed."; fi) > /dev/null;
