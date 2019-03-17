@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+
 package config
 
 import (
@@ -155,10 +156,14 @@ const (
 	RatelimiterServiceName = "ratelimiter.service.name"
 	TDSServiceName         = "tds.service.name"
 
+	// If this is true, using PVCs for the data and result volumes will be enabled.
+	// Will be DLAAS_LCM_LEARNER_PVC_ENABLE in environment.
+	LcmLearnerPvcEnable = "lcm.learner.pvc.enable"
+
 	// If this is true, the LCM will use the non-split configuration,
 	// and will use the host mount on the nodes for logs and emetrics
 	// (and control data), and will launch fluentd on each node.
-	// Will be DLAAS_LCM_FLUENT_EMETRICS_ENABLE in environment.
+	// Will be DLAAS_LCM_FLUENTD_EMETRICS_ENABLE in environment.
 	LcmFluentdEmetricsEnable = "lcm.fluentd.emetrics.enable"
 
 	// If this is true, the log collectors will still push to
@@ -184,10 +189,6 @@ const (
 )
 
 var viperInitOnce sync.Once
-
-func init() {
-	InitViper()
-}
 
 // InitViper is initializing the configuration system
 func InitViper() {
@@ -221,6 +222,8 @@ func InitViper() {
 		viper.SetDefault(LCMServiceName, "dlaas-lcm")
 		viper.SetDefault(RatelimiterServiceName, "dlaas-ratelimiter")
 		viper.SetDefault(TDSServiceName, "dlaas-training-data")
+
+		viper.SetDefault(LcmLearnerPvcEnable, false)
 
 		viper.SetDefault(LcmFluentdEmetricsEnable, false)
 		viper.SetDefault(LogcollectorEmetricsTdsPushEnabled, true)
